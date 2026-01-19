@@ -1,6 +1,6 @@
-# Project Bootstrap
+# Astro-Vue-Tina Bootstrap
 
-Kopiert Basisdateien in ein neues Projekt.
+Kopiert Basisdateien in ein neues Projekt. Dies umfasst Vue-Blöcke und Tina CMS-Konfiguration, die speziell für ein Astro-Vue-Projekt optimiert sind.
 
 ## Nutzung
 
