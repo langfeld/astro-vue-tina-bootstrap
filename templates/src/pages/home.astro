@@ -1,0 +1,42 @@
+---
+import { client } from "../../tina/__generated__/client";
+import Page from "../components/Page.vue";
+
+// Hole die Seite
+const pageResponse = await client.queries.page({
+  relativePath: "home.mdx",
+});
+
+const { data, query, variables } = pageResponse;
+---
+
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{data.page.title}</title>
+  </head>
+  <body>
+    <Page
+      client:load
+      data={data.page}
+      query={query}
+      variables={variables}
+    />
+  </body>
+</html>
+
+<style is:global>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+  }
+</style>
