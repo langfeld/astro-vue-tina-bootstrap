@@ -1,38 +1,87 @@
+#!/usr/bin/env tsx
 import fs from "fs";
 import path from "path";
+import { cpSync, existsSync, mkdirSync } from "fs";
 
-const target = path.resolve("tina/config.ts");
-const patchPath = path.resolve(__dirname, "../templates/tina/collections.patch.ts");
+// ====== Konfiguration ======
+const TEMPLATES_DIR = path.resolve(__dirname, "../templates");
+const PATCHES_DIR = path.resolve(__dirname, "../patches");
+const TARGET_ROOT = process.cwd();
+const CHECK_ONLY = process.argv.includes("--check");
+const DRY_RUN = process.argv.includes("--dry-run");
 
-const START = "// BOOTSTRAP:collections:start";
-const END = "// BOOTSTRAP:collections:end";
-
-if (!fs.existsSync(target)) {
-  console.error("❌ tina/config.ts nicht gefunden");
-  process.exit(1);
+// ====== Hilfsfunktionen ======
+function copyTemplates(src: string, dest: string) {
+  if (!existsSync(src)) return;
+  cpSync(src, dest, {
+    recursive: true,
+    filter: (file) => {
+      const rel = path.relative(src, file);
+      return !existsSync(path.join(dest, rel));
+    },
+  });
 }
 
-const config = fs.readFileSync(target, "utf8");
-
-if (!config.includes(START) || !config.includes(END)) {
-  console.error("❌ Bootstrap-Marker fehlen in tina/config.ts");
-  console.error("👉 Bitte Marker manuell einfügen:");
-  console.error(`   ${START}`);
-  console.error(`   ${END}`);
-  process.exit(1);
+// ====== Templates kopieren ======
+if (!CHECK_ONLY) {
+  console.log("📁 Templates kopieren...");
+  copyTemplates(TEMPLATES_DIR, TARGET_ROOT);
+  console.log("✅ Templates kopiert");
+} else {
+  console.log("🔎 Check-Modus: Templates werden nur geprüft");
 }
 
-const patch = fs.readFileSync(patchPath, "utf8");
-
-if (config.includes(patch.trim())) {
-  console.log("ℹ️  Tina-Collections bereits eingebunden");
+// ====== Patches anwenden ======
+if (!fs.existsSync(PATCHES_DIR)) {
+  console.log("ℹ️  Keine Patches gefunden");
   process.exit(0);
 }
 
-const updated = config.replace(
-  new RegExp(`${START}[\\s\\S]*?${END}`),
-  `${START}\n${patch}\n  ${END}`
-);
+// Patch-Logik: für jede Datei in patches/
+const patchFiles = fs.readdirSync(PATCHES_DIR).filter(f => f.endsWith(".ts"));
 
-fs.writeFileSync(target, updated);
-console.log("✅ Tina-Collections ergänzt");
+for (const patchFile of patchFiles) {
+  const patchPath = path.join(PATCHES_DIR, patchFile);
+  const patchContent = fs.readFileSync(patchPath, "utf8").trim();
+
+  // Marker ableiten: z.B. tina.collections.ts -> collections
+  const parts = patchFile.split(".");
+  const markerName = parts.length >= 2 ? parts[1] : parts[0];
+  const START = `// BOOTSTRAP:${markerName}:start`;
+  const END = `// BOOTSTRAP:${markerName}:end`;
+
+  // Zieldatei: standardmäßig tina/config.ts
+  const targetFile = path.resolve(TARGET_ROOT, "tina/config.ts");
+  if (!existsSync(targetFile)) {
+    console.error(`❌ Ziel-Datei ${targetFile} nicht gefunden für Patch ${patchFile}`);
+    continue;
+  }
+
+  let content = fs.readFileSync(targetFile, "utf8");
+
+  if (!content.includes(START) || !content.includes(END)) {
+    console.error(`❌ Marker ${START}/${END} in tina/config.ts fehlt (Patch: ${patchFile})`);
+    continue;
+  }
+
+  if (content.includes(patchContent)) {
+    console.log(`ℹ️  Patch ${patchFile} bereits eingebunden`);
+    continue;
+  }
+
+  if (DRY_RUN) {
+    console.log(`💡 Dry-run: Patch ${patchFile} würde eingefügt`);
+    continue;
+  }
+
+  if (!CHECK_ONLY) {
+    content = content.replace(
+      new RegExp(`${START}[\\s\\S]*?${END}`),
+      `${START}\n${patchContent}\n  ${END}`
+    );
+    fs.writeFileSync(targetFile, content);
+    console.log(`✅ Patch ${patchFile} angewendet`);
+  }
+}
+
+console.log("🎯 Alle Patches verarbeitet");

@@ -5,7 +5,17 @@ Kopiert Basisdateien in ein neues Projekt. Dies umfasst Vue-Blöcke und Tina CMS
 ## Nutzung
 
 ```bash
-npx degit <user>/<repo>/templates
-```
+# Bootstrapper ins Zielprojekt holen
+npx degit USERNAME/astro-vue-tina-bootstrap bootstrap
 
-(Username/Repo ersetzen)
+# Script ausführen
+npx tsx bootstrap/scripts/setup-files.ts
+
+# Optional: --check oder --dry-run
+npx tsx bootstrap/scripts/setup-files.ts --check
+npx tsx bootstrap/scripts/setup-files.ts --dry-run
+
+# Bootstrap-Ordner aufräumen
+rm -rf bootstrap
+
+```
