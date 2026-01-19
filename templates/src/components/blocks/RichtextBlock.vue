@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { tinaField } from "../../composables/tinaField";
+import TinaMarkdown from "../TinaMarkdown.vue";
 
 defineProps<{
   block: {
     heading?: string;
-    content?: string;
+    content?: any;
   };
 }>();
 </script>
@@ -21,8 +22,9 @@ defineProps<{
       v-if="block.content"
       class="richtext-content"
       :data-tina-field="tinaField(block, 'content')"
-      v-html="block.content"
-    />
+    >
+      <TinaMarkdown :content="block.content" />
+    </div>
   </section>
 </template>
 
