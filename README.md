@@ -5,6 +5,9 @@ Kopiert Basisdateien in ein neues Projekt. Dies umfasst Vue-Blöcke und Tina CMS
 ## Nutzung
 
 ```bash
+# TSX installieren (wenn noch nicht vorhanden)
+npm install -D tsx
+
 # Bootstrapper ins Zielprojekt holen
 npx degit USERNAME/astro-vue-tina-bootstrap bootstrap
 
