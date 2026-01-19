@@ -11,6 +11,9 @@ npm install -D tsx
 # Bootstrapper ins Zielprojekt holen
 npx degit USERNAME/astro-vue-tina-bootstrap bootstrap
 
+# Jetzt die Marker in der config.ts von Tina setzen
+# BOOTSTRAP:collections:start  und  BOOTSTRAP:collections:end
+
 # Script ausführen
 npx tsx bootstrap/scripts/setup-files.ts
 
@@ -21,4 +24,21 @@ npx tsx bootstrap/scripts/setup-files.ts --dry-run
 # Bootstrap-Ordner aufräumen
 rm -rf bootstrap
 
+```
+
+## Marker setzen
+
+Die Marker entsprechen dem Namen der Patch-Datei (z.B. `collections` für `collections.patch.ts`).
+
+```typescript
+// tina/config.ts
+
+export default defineConfig({
+  schema: {
+    collections: [
+      // BOOTSTRAP:collections:start
+      // BOOTSTRAP:collections:end
+    ]
+  }
+});
 ```
